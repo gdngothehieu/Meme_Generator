@@ -1,108 +1,87 @@
-import random
 import os
+import random
+import shutil
+
 import requests
-from flask import Flask, render_template, abort, request
-from QuoteEngine.Ingestor import Ingestor
-from MemeGenerator.MemeEngine import MemeEngine
+from flask import Flask, render_template, request
 
-app = Flask(__name__, static_folder="./static")
+from meme import MemeEngine
+from ingestors import Ingestor
 
-meme = MemeEngine('./')
+app = Flask(__name__)
+
+static_dir = "./static"
+if os.path.exists(static_dir):
+    shutil.rmtree(static_dir)
+meme = MemeEngine(static_dir)
+
+
+@app.after_request
+def add_header(response):
+    response.headers['Cache-Control'] = 'no-store'
+    return response
 
 
 def setup():
     """ Load all resources """
+    quote_files = ["./_data/DogQuotes/DogQuotesTXT.txt",
+                   "./_data/DogQuotes/DogQuotesDOCX.docx",
+                   "./_data/DogQuotes/DogQuotesPDF.pdf",
+                   "./_data/DogQuotes/DogQuotesCSV.csv"]
+    all_quotes = []
 
-    quote_files = [
-        './_data/DogQuotes/DogQuotesTXT.txt',
-        './_data/DogQuotes/DogQuotesDOCX.docx',
-        './_data/DogQuotes/DogQuotesPDF.pdf',
-        './_data/DogQuotes/DogQuotesCSV.csv'
-    ]
+    for f in quote_files:
+        try:
+            all_quotes.extend(Ingestor.parse(f))
+            print(Ingestor.parse(f))
+        except ValueError as error:
+            print(f"ValueError: {error}")
 
-    quotes = []
-    try:
-        for f in quote_files:
-            quotes.extend(Ingestor.parse(f))
-    except:
-        print("Problems while extending Ingestor")
-    images_path = "./_data/photos/dog/"
-
-    imgs = []
+    images_path = "./_data/Photos/Dog/"
+    all_images = []
     for root, dirs, files in os.walk(images_path):
-        imgs = [os.path.join(root, name) for name in files]
-
-    return quotes, imgs
-
-
-quotes, imgs = setup()
+        all_images = [os.path.join(root, name) for name in files]
+    return all_quotes, all_images
 
 
-@app.route('/')
+quotes, images = setup()
+
+
+@app.route("/health")
+def health_check():
+    """Simple application health check API"""
+    return "Healthy", 200
+
+@app.route("/")
 def meme_rand():
     """ Generate a random meme """
-
-    img = random.choice(imgs)
+    img = random.choice(images)
     quote = random.choice(quotes)
-    path = None
-
-    meme_path = meme.make_meme(img, quote.body, quote.author)
-
-    # Extract the filename instead in order to use
-    # with url_for() in the template
-    if meme_path:
-        path = meme_path.split('/')[-1]
-
-    return render_template('meme.html', path=path)
+    path = meme.make_meme(img, quote.body, quote.author)
+    return render_template("meme.html", path=path)
 
 
-@app.route('/create', methods=['GET'])
+@app.route("/create", methods=["GET"])
 def meme_form():
     """ User input for meme information """
-    return render_template('meme_form.html')
+    return render_template("meme_form.html")
 
 
-@app.route('/create', methods=['POST'])
+@app.route("/create", methods=["POST"])
 def meme_post():
     """ Create a user defined meme """
+    img = "./temp_image.jpg"
+    image_url = request.form.get("image_url")
+    img_data = requests.get(image_url, stream=True).content
+    with open(img, "wb") as f:
+        f.write(img_data)
 
-    data = request.form
-    image_url = data.get('image_url')
-    body = data.get('body')
-    author = data.get('author')
-    path = None
-
-    try:
-        # Download the image
-        response = requests.get(image_url, stream=True)
-
-        # Check if the file is an image
-        file_type = response.headers.get('Content-Type').split('/')[0]
-        if file_type != 'image':
-            raise Exception("Invalid file format!")
-
-        # Save the image
-        temp_folder = os.path.join(os.getcwd(), 'tmp')
-        os.makedirs(temp_folder, exist_ok=True)
-
-        image_path = os.path.join(temp_folder, 'meme-img.jpg')
-        with open(image_path, 'wb') as file:
-            for block in response.iter_content(1024):
-                if not block:
-                    break
-
-                file.write(block)
-
-        meme_path = meme.make_meme(image_path, body, author)
-        if meme_path:
-            path = meme_path.split('/')[-1]
-
-        # Delete the temporary image
-        os.remove(image_path)
-    except Exception as e:
-        print("Something went wrong!", e)
-
-    return render_template('meme.html', path=path)
+    body = request.form.get("body", "")
+    author = request.form.get("author", "")
+    path = meme.make_meme(img, body, author)
+    print(path)
+    os.remove(img)
+    return render_template("meme.html", path=path)
 
 
 if __name__ == "__main__":

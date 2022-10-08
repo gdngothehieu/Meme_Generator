@@ -12,30 +12,31 @@ body %}
           aria-describedby="image url"
           placeholder="Enter a url for an image"
           name="image_url"
+          required
         />
       </div>
       <div class="form-group">
-        <label for="body">Meme body</label>
+        <label for="body">Meme Body</label>
         <input
           type="text"
           class="form-control"
           id="body"
-          aria-describedby="Quote Body"
-          maxlength="38"
+          aria-describedby="Meme Body"
           placeholder="To be or not to be"
           name="body"
+          required
         />
       </div>
       <div class="form-group">
-        <label for="author">Memer</label>
+        <label for="author">Meme Motivator</label>
         <input
           type="text"
           class="form-control"
           id="author"
-          maxlength="30"
-          aria-describedby="Quote Author"
-          placeholder="Mark Twain"
+          aria-describedby="Meme Author"
+          placeholder="The Rock Johnson"
           name="author"
+          required
         />
       </div>
       <button type="submit" class="btn btn-primary">Create Meme!</button>

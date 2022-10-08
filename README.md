@@ -1,167 +1,37 @@
-# Motivational meme generator app
+# Meme Generator
 
-A simple Python application to generate both random and custom motivational memes from images and short quotes, using a commandline interface and a graphical interface. The commandline interface saves the memes locally to a disk while the graphical inteface is served with the Flask web framework.
+A web app that generates memes based on user input
 
-## Getting started
+## Getting Started
 
-1. Clone the project using:
+These instructions will get you a copy of the project up and running on your local machine for development and testing
+purposes. See deployment for notes on how to deploy the project on a live system.
 
-```sh
-git clone https://github.com/gdngothehieu/Meme_Generator.git
-```
+### Prerequisites
 
-2. Create a virtual environment and install the dependencies by running:
+Install all dependencies given in the `requirements.txt` file using `pip`:
+Window
 
-```sh
+```bash
 pip install -r requirements.txt
 ```
 
-Before you continue ensure that `Xpdf` is also installed in your computer. It contains the pdftotext utility which is used in the project but not contained in the dependencies list. Visit this [link](https://www.xpdfreader.com/) for more information.
+Download and install the `pdftotext` command line tool from: https://www.xpdfreader.com/download.html
 
-3. To use the CLI:
-   Ubuntu
+### Application
 
-```sh
-$ python3 meme.py -h
-    Window
-sh
-$ python meme.py -h
+The application can be started by running the following command:
 
-
-usage: meme.py [-h] [-path PATH] [-body BODY] [-author AUTHOR]
-
-Generate a motivational meme
-
-optional arguments:
-  -h, --help      show this help message and exit
-  -path PATH      path to the meme image
-  -body BODY      the body of the Quote
-  -author AUTHOR  the author of the Quote
+```bash
+python app.py
 ```
 
-or run the command below:
+You can access the application at: https://localhost:5000
 
-```sh
-python3 meme.py
-```
+## Built With
 
-to generate a random meme
+- [Flask](http://flask.pocoo.org/) - The python server micro framework
 
-4. To use the web interface, run:
+## Acknowledgments
 
-```sh
-export FLASK_APP=app.py
-```
-
-```
-flask run
-```
-
-### Development mode with Flask
-
-For development purposes, make sure to add the following variables:
-
-```sh
-export FLASK_DEBUG=True
-export FLASK_ENV=development
-```
-
-and run:
-
-```sh
-flask run --reload
-```
-
-for hot reloads whenever you make changes to the code.
-
-Once the server starts, visit [this link](http://127.0.0.1:5000) using your favorite browser.
-
-## Modules and dependencies
-
-The project is made up of two modules and several dependencies.
-
-### Dependencies
-
-1. `Flask` - to build the web interface. Visit this [link](https://flask.palletsprojects.com/en/2.1.x/) for more information.
-2. `Pillow` - for manipulating images. Visit this [link](https://pillow.readthedocs.io/en/stable/) for more information.
-3. `pandas` - for extracting text content from csv documents. Visit this [link](https://pandas.pydata.org/) for more information.
-4. `python-docx` - for extracting text content from docx documents. Visit this [link](https://python-docx.readthedocs.io/en/latest/) for more information.
-
-### Modules
-
-1. `QuoteEngine` module - deals with extracting and parsing quotes from txt, docx, pdf and csv documents.
-
-Contains the `Ingestor` and `Quote` submodules.
-
-- `Ingestor`
-  `Ingestor` class: extract text content (quotes) from documents. Documents supported include txt, pdf, docx and csv.
-  **Methods**: _parse(path: str)_ - parses the contents in the document referenced in the `path`. Returns a list of `QuoteModel` objects.
-
-**Example**:
-
-```sh
-from QuoteEngine.Ingestor import Ingestor
-
-path = '/_data/SimpleLines/SimpleLines.csv'
-quotes = Ingestor().parse(path)
-print(type(quotes))
-
->>> <class 'list'>
-```
-
-- `Quote`
-  `QuoteModel` class: instantiate Quote objects.
-
-**Attributes**: _body (str), author(str)_
-`body` - The Quote's text
-`author` - The Quote's author
-
-**Example**:
-
-```sh
-from QuoteEngine.Quote import QuoteModel
-
-body = 'To be or not to be'
-author = 'Wiseman'
-
-Quote = QuoteModel(body, author)
-print(Quote)
-
->>> "To be or not to be" - Wiseman
-```
-
-2. `MemeGenerator` module - deals with the creation and storing of the memes.
-
-Contains the `memeengine` submodule.
-
-- `MemeEngine`
-  `MemeEngine` class: create memes from an image and a Quote.
-
-**Attributes**: _output_dir (str)_
-
-**Methods**: _make_meme(img_path: str, text: str, author: str, width: int)_ - creates a meme using an image specified in `img_path` and a Quote from `text` and `author`. The meme is resized to size `width`. Returns the path of the created meme in the disk (for CLI) or the relative path to the static files folder (for GUI).
-
-**Example**:
-
-```sh
-from MemeGenerator.MemeEngine import MemeEngine
-
-output_directory = 'memes'
-
-img_path = '/_data/photos/dog/xander_1.jpg'
-body = 'To be or not to be'
-author = 'Wiseman'
-
-Quote = MemeEngine(output_directory).make_meme(img_path, body, author, 300)
-print(Quote)
-
->>> "/tmp/xander_1_meme.jpg"
-```
-
-## Author
-
-- Silas Jimmy
-
-## Credits
-
-- [Udacity](https://www.udacity.com)
+- [Udacity](https://www.udacity.com/)
